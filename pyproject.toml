@@ -1,0 +1,16 @@
+# Test configuration
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+# Ruff linter configuration
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "S"]
+ignore = ["S101"]  # Allow assert statements
+
+# Bandit security configuration
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "venv"]
