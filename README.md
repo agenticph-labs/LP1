@@ -208,10 +208,33 @@ p1-client-intake/
 
 ---
 
+## PH Use Case
+
+This tool is designed for Philippine consulting firms, BPO engineering units, and professional services teams that need a standardized, auditable client intake and project scoping workflow. It enforces:
+
+- **Consistent intake** — Structured data collection ensures no project starts without a complete brief.
+- **Classification engine** — Rule-based categorization maps client needs to pre-defined service categories, enabling resource planning and skills matching.
+- **Automated scoping** — Generates 10-section scope documents with deliverables, timelines, budgets, risk factors, and next steps — ready for client presentation.
+- **Audit trail** — Every intake produces a timestamped output file and an index linking all active engagements.
+
+The pipeline runs with zero external dependencies (stdlib only), making it ideal for air-gapped environments or teams that cannot install heavy ML frameworks.
+
+---
+
+## CI/CD Pipelines
+
+| Workflow | Trigger | What it does |
+|----------|---------|-------------|
+| Test | Every push/PR to `main` | Ruff lint + pytest with 80% coverage threshold |
+| Security | Every push/PR + weekly Monday | pip-audit (vulnerability scan) + Bandit (SAST) |
+
+---
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
 
 ---
 
-*Built as Portfolio Project 1 for Business Automation — [AgenticPH Labs](https://agenticph-labs.github.io/portfolio)*
+*Portfolio Project 1 — [AgenticPH Labs](https://agenticph-labs.github.io/portfolio)*  
+*Managed by the Hermes Agent System · agenticph.com*
