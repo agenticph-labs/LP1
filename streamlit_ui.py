@@ -82,29 +82,97 @@ SIZES = [
 st.title("📋 Client Intake & Project Scoping")
 st.markdown("Enter client information below and generate a structured project scope document.")
 
+# ── Demo data presets ──
+SAMPLE_PRESETS = {
+    "🔧 Acme Manufacturing (Digitization)": {
+        "name": "Acme Manufacturing Corp",
+        "industry": "Manufacturing",
+        "size": "Enterprise (500+ employees)",
+        "location": "Chicago, IL",
+        "website": "https://acme-manufacturing.example.com",
+        "need": "We need to digitize our supply chain tracking. Currently using spreadsheets and paper forms. Want real-time inventory visibility and automated purchase order generation.",
+        "research_notes": "Competitors have adopted ERP solutions. Company has legacy mainframe systems. Budget estimated at $150K–$250K. IT team of 8.",
+    },
+    "🏥 BrightPath Healthcare (Patient Portal)": {
+        "name": "BrightPath Healthcare",
+        "industry": "Healthcare",
+        "size": "Mid-size (100–500 employees)",
+        "location": "Austin, TX",
+        "website": "https://brightpath-health.example.com",
+        "need": "Looking for a patient portal and appointment scheduling system integrated with their existing EHR. Need HIPAA compliance and mobile access.",
+        "research_notes": "Currently using Athenahealth but want more customization. IT team of 5. Timeline 6–9 months. Budget $200K–$350K.",
+    },
+    "🪴 GreenLeaf Landscaping (Website + CRM)": {
+        "name": "GreenLeaf Landscaping",
+        "industry": "Services / Consulting",
+        "size": "Small (10–50 employees)",
+        "location": "Portland, OR",
+        "website": "",
+        "need": "Need a simple website with booking capability. Also want CRM for client management and automated follow-up emails after service visits.",
+        "research_notes": "No current digital presence besides Google My Business. Budget under $30K. Owner wants something live in 2 months.",
+    },
+    "💰 Pinnacle Financial (KYC Automation)": {
+        "name": "Pinnacle Financial Group",
+        "industry": "Finance / Insurance",
+        "size": "Mid-size (100–500 employees)",
+        "location": "New York, NY",
+        "website": "https://pinnacle-fin.example.com",
+        "need": "We need to automate our client onboarding and KYC/AML compliance checks. Manual processes are slowing down account openings by 2–3 weeks.",
+        "research_notes": "Regulated by SEC and FINRA. Current process uses PDF forms and email. Want integration with Clear and Onfido for identity verification. Budget $300K+.",
+    },
+    "🛍️ TidePool Retail (E-commerce)": {
+        "name": "TidePool Retail",
+        "industry": "Retail / E-commerce",
+        "size": "Small (10–50 employees)",
+        "location": "Santa Monica, CA",
+        "website": "https://tidepool-retail.example.com",
+        "need": "Want to build an e-commerce website with inventory management, payment processing, and shipping integration. Currently selling on Etsy only.",
+        "research_notes": "Etsy store has 15K+ sales. Ready to move to own platform. Shopify vs custom build under evaluation. Budget $40K–$80K.",
+    },
+}
+
+# Track selected preset globally
+selected_preset = st.selectbox(
+    "🎯 Quick Demo — Load a sample client",
+    options=[""] + list(SAMPLE_PRESETS.keys()),
+    help="Select a pre-built client profile to auto-fill the form below.",
+)
+preset = SAMPLE_PRESETS[selected_preset] if selected_preset else None
+
 with st.form("intake_form"):
     col1, col2 = st.columns(2)
 
     with col1:
-        name = st.text_input("Client Name *", placeholder="e.g. Acme Manufacturing Corp")
-        industry = st.selectbox("Industry *", options=[""] + INDUSTRIES)
-        size = st.selectbox("Company Size *", options=[""] + SIZES)
-        location = st.text_input("Location", placeholder="e.g. Chicago, IL")
+        # Pre-fill from preset if selected
+        if selected_preset:
+            name = st.text_input("Client Name *", value=preset["name"])
+            industry = st.selectbox("Industry *", options=[""] + INDUSTRIES, index=INDUSTRIES.index(preset["industry"]) + 1 if preset["industry"] in INDUSTRIES else 0)
+            size = st.selectbox("Company Size *", options=[""] + SIZES, index=SIZES.index(preset["size"]) + 1 if preset["size"] in SIZES else 0)
+            location = st.text_input("Location", value=preset["location"])
+        else:
+            name = st.text_input("Client Name *", placeholder="e.g. Acme Manufacturing Corp")
+            industry = st.selectbox("Industry *", options=[""] + INDUSTRIES)
+            size = st.selectbox("Company Size *", options=[""] + SIZES)
+            location = st.text_input("Location", placeholder="e.g. Chicago, IL")
 
     with col2:
-        website = st.text_input("Website", placeholder="https://...")
-        need = st.text_area(
-            "Client Need *",
-            placeholder="Describe the client's problem statement...",
-            height=100,
-        )
-        research_notes = st.text_area(
-            "Research Notes",
-            placeholder="Background, budget, competitors, timeline...",
-            height=100,
-        )
+        if selected_preset:
+            website = st.text_input("Website", value=preset["website"])
+            need = st.text_area("Client Need *", value=preset["need"], height=100)
+            research_notes = st.text_area("Research Notes", value=preset["research_notes"], height=100)
+        else:
+            website = st.text_input("Website", placeholder="https://...")
+            need = st.text_area("Client Need *", placeholder="Describe the client's problem statement...", height=100)
+            research_notes = st.text_area("Research Notes", placeholder="Background, budget, competitors, timeline...", height=100)
 
     submitted = st.form_submit_button("🚀 Generate Scope Document", type="primary", use_container_width=True)
+
+# ── Auto-run if preset selected (on initial load via query param or first visit) ──
+if submitted or (selected_preset and "auto_run" not in st.session_state):
+    st.session_state.auto_run = True
+    if not submitted and selected_preset:
+        # First load with a preset — auto-submit
+        st.rerun()
 
 if submitted:
     missing = []
