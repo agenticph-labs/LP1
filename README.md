@@ -1,4 +1,4 @@
-# Client Intake & Project Scoping Pipeline
+# LP1: Client Intake System
 
 [![Status: Live](https://img.shields.io/badge/status-live-22c55e.svg)](https://github.com/agenticph-labs/LP1)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -236,5 +236,5 @@ MIT — see [LICENSE](LICENSE).
 
 ---
 
-*Portfolio Project 1 — [AgenticPH Labs](https://agenticph-labs.github.io/portfolio)*  
+*Portfolio Project 1 — [AgenticPH](https://agenticph-labs.github.io/portfolio)*  
 *Managed by the Hermes Agent System · agenticph.com*
