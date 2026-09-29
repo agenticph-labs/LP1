@@ -1,6 +1,6 @@
 # Client Intake & Project Scoping Pipeline
 
-[![Status: Live](https://img.shields.io/badge/status-live-22c55e.svg)](https://github.com/agenticph-labs/p1-client-intake)
+[![Status: Live](https://img.shields.io/badge/status-live-22c55e.svg)](https://github.com/agenticph-labs/LP1)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -193,7 +193,7 @@ python -m tests.test_integration
 ## Project Structure
 
 ```
-p1-client-intake/
+LP1/
 ├── client_intake_pipeline.py   # Main pipeline (all stages)
 ├── intake_data/
 │   ├── sample_client.json      # 5 sample clients (JSON)
