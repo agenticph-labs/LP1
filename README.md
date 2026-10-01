@@ -4,6 +4,8 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+🌱 **Built in the open, for the open.** A community tool by Filipino builders — no vendor lock-in, no enterprise gatekeeping. Just practical workflow automation that works for the Philippines.
+
 An **n8n-like workflow automation** built in pure Python that simulates a consulting company's client intake and project scoping process. The pipeline ingests client inquiries, validates them, classifies the need, generates structured project scope documents, and outputs formatted reports — all in a single, auditable pass.
 
 ---
@@ -236,5 +238,5 @@ MIT — see [LICENSE](LICENSE).
 
 ---
 
-*Portfolio Project 1 — [AgenticPH](https://agenticph-labs.github.io/portfolio)*  
-*Managed by the Hermes Agent System · agenticph.com*
+*Built in the open, for the open.*  
+*[AgenticPH Labs](https://agenticph-labs.github.io/portfolio) — Filipino builders crafting practical AI tools for the Philippines.*
