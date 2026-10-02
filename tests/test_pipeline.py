@@ -2,31 +2,28 @@
 Tests for the Client Intake & Project Scoping Pipeline.
 """
 
-import json
 import os
-import tempfile
-from pathlib import Path
-from datetime import datetime
-
-import pytest
 
 # Ensure the project root is on sys.path
 import sys
+import tempfile
+from pathlib import Path
+
+import pytest
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from client_intake_pipeline import (
-    ClientRecord,
     ClassifiedNeed,
-    ProjectScope,
-    ingest,
-    validate,
-    classify,
-    generate_scopes,
-    output,
+    ClientRecord,
     _classify_single,
     _render_markdown,
+    classify,
+    generate_scopes,
+    ingest,
+    output,
+    validate,
 )
-
 
 # ── Fixtures ──────────────────────────────────────────────────────────────
 
@@ -40,7 +37,8 @@ def sample_records() -> list:
             size="Mid-size (50–200)",
             location="Detroit, MI",
             website="https://testcorp.example.com",
-            need="We need to digitize our supply chain tracking with real-time inventory visibility.",
+            need="We need to digitize our supply chain tracking "
+            "with real-time inventory visibility.",
             research_notes="Competitors have adopted ERP. Budget $100K.",
         ),
         ClientRecord(
@@ -144,14 +142,16 @@ class TestClassify:
 
     def test_healthcare_hipaa(self):
         """HIPAA keywords should map to Healthcare IT."""
-        r = ClientRecord("T", "C", "Health", "M", "L", "", "Need HIPAA-compliant patient portal", "")
+        r = ClientRecord("T", "C", "Health", "M", "L", "",
+                        "Need HIPAA-compliant patient portal", "")
         cls = _classify_single(r)
         assert cls.category == "Healthcare IT"
         assert "hipaa" in cls.keywords
 
     def test_ecommerce(self):
         """E-commerce keywords."""
-        r = ClientRecord("T", "C", "Retail", "S", "L", "", "Need e-commerce with payment processing", "")
+        r = ClientRecord("T", "C", "Retail", "S", "L", "",
+                        "Need e-commerce with payment processing", "")
         cls = _classify_single(r)
         assert cls.category == "E-commerce"
 
@@ -248,7 +248,9 @@ class TestFullPipeline:
         """Run the full pipeline end-to-end with the sample JSON file."""
         from client_intake_pipeline import run_pipeline
 
-        json_path = os.path.join(os.path.dirname(__file__), "..", "intake_data", "sample_client.json")
+        json_path = os.path.join(
+            os.path.dirname(__file__), "..", "intake_data", "sample_client.json"
+        )
         with tempfile.TemporaryDirectory() as tmp:
             processed, errors = run_pipeline([json_path], output_dir=tmp)
             assert processed == 5

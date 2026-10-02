@@ -41,7 +41,9 @@ def main():
         content = report[0].read_text()
         assert "Supply Chain" in content, "Classification seems wrong for Acme"
 
-        print(f"\n✓ Integration test PASSED — {processed} scopes, {errors} errors, {len(files)} files")
+        msg = (f"\n✓ Integration test PASSED — {processed} scopes, "
+               f"{errors} errors, {len(files)} files")
+        print(msg)
 
 
 if __name__ == "__main__":

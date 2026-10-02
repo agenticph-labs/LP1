@@ -26,10 +26,10 @@ import json
 import os
 import re
 import sys
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Data Model
@@ -54,7 +54,7 @@ class ClassifiedNeed:
     category: str               # e.g. "Digital Transformation"
     sub_category: str           # e.g. "Supply Chain Digitization"
     confidence: float           # 0.0 – 1.0
-    keywords: List[str]         # Trigger phrases that drove classification
+    keywords: list[str]         # Trigger phrases that drove classification
     estimated_complexity: str   # Low / Medium / High
 
 
@@ -66,19 +66,19 @@ class ProjectScope:
     scope_id: str
     generated_at: str
     project_objective: str
-    deliverables: List[str]
-    tech_stack_suggestions: List[str]
+    deliverables: list[str]
+    tech_stack_suggestions: list[str]
     estimated_duration: str
     estimated_budget_range: str
-    risk_factors: List[str]
-    next_steps: List[str]
+    risk_factors: list[str]
+    next_steps: list[str]
 
 
 # ---------------------------------------------------------------------------
 # 1. INGEST — Read client records from JSON or CSV sources
 # ---------------------------------------------------------------------------
 
-def ingest(source: str) -> List[ClientRecord]:
+def ingest(source: str) -> list[ClientRecord]:
     """
     Load client records from a file or directory.
 
@@ -90,7 +90,7 @@ def ingest(source: str) -> List[ClientRecord]:
     path = Path(source)
 
     if path.is_dir():
-        records: List[ClientRecord] = []
+        records: list[ClientRecord] = []
         for child in sorted(path.iterdir()):
             if child.suffix.lower() in (".json", ".csv"):
                 records.extend(ingest(str(child)))
@@ -106,8 +106,8 @@ def ingest(source: str) -> List[ClientRecord]:
     raise ValueError(f"Unsupported file format: {path.suffix} (supported: .json, .csv)")
 
 
-def _ingest_json(path: Path) -> List[ClientRecord]:
-    with open(path, "r") as f:
+def _ingest_json(path: Path) -> list[ClientRecord]:
+    with open(path) as f:
         data = json.load(f)
 
     raw_records = data.get("clients", []) if isinstance(data, dict) else data
@@ -116,9 +116,9 @@ def _ingest_json(path: Path) -> List[ClientRecord]:
     return records
 
 
-def _ingest_csv(path: Path) -> List[ClientRecord]:
-    records: List[ClientRecord] = []
-    with open(path, "r", newline="") as f:
+def _ingest_csv(path: Path) -> list[ClientRecord]:
+    records: list[ClientRecord] = []
+    with open(path, newline="") as f:
         reader = csv.DictReader(f)
         for row in reader:
             records.append(ClientRecord(**{k.strip(): v.strip() for k, v in row.items()}))
@@ -133,14 +133,14 @@ def _ingest_csv(path: Path) -> List[ClientRecord]:
 REQUIRED_FIELDS = ["id", "name", "industry", "size", "need"]
 
 
-def validate(records: List[ClientRecord]) -> Tuple[List[ClientRecord], List[Dict[str, Any]]]:
+def validate(records: list[ClientRecord]) -> tuple[list[ClientRecord], list[dict[str, Any]]]:
     """
     Check every record for missing required fields and basic quality.
 
     Returns (valid_records, error_log).
     """
-    valid: List[ClientRecord] = []
-    errors: List[Dict[str, Any]] = []
+    valid: list[ClientRecord] = []
+    errors: list[dict[str, Any]] = []
 
     for rec in records:
         missing = [f for f in REQUIRED_FIELDS if not getattr(rec, f, "").strip()]
@@ -164,17 +164,60 @@ def validate(records: List[ClientRecord]) -> Tuple[List[ClientRecord], List[Dict
 
 # Keyword-to-category mapping used by the classifier.
 # Each entry: (category, sub_category, [keywords])
-CLASSIFICATION_RULES: List[Tuple[str, str, List[str]]] = [
-    ("Digital Transformation", "Supply Chain Digitization",    ["supply chain", "inventory", "purchase order", "logistics", "warehouse"]),
-    ("Digital Transformation", "Legacy System Modernization",  ["legacy", "mainframe", "digitize", "paper form", "manual process"]),
-    ("Healthcare IT",          "Patient Portal & Scheduling",  ["patient portal", "appointment", "ehr", "hipaa", "healthcare", "clinical"]),
-    ("Web Development",        "Website with Booking",         ["website", "booking", "landing page", "web presence"]),
-    ("CRM & Sales",            "CRM Implementation",           ["crm", "customer relationship", "lead tracking", "sales pipeline"]),
-    ("Compliance & KYC",       "KYC/AML Automation",           ["kyc", "aml", "compliance", "onboarding", "identity verification", "know your customer"]),
-    ("E-commerce",             "E-commerce Platform",          ["e-commerce", "ecommerce", "online store", "shopify", "payment processing", "shipping"]),
-    ("SaaS / MVP",             "MVP Development",              ["mvp", "minimum viable", "saas platform", "prototype", "wireframes"]),
-    ("Retail Technology",      "POS Unification",              ["pos", "point of sale", "menu", "restaurant", "centralized management"]),
-    ("Process Automation",     "General Workflow Automation",  ["automate", "workflow", "integration", "api", "notification"]),
+CLASSIFICATION_RULES: list[tuple[str, str, list[str]]] = [
+    (
+        "Digital Transformation",
+        "Supply Chain Digitization",
+        ["supply chain", "inventory", "purchase order", "logistics", "warehouse"],
+    ),
+    (
+        "Digital Transformation",
+        "Legacy System Modernization",
+        ["legacy", "mainframe", "digitize", "paper form", "manual process"],
+    ),
+    (
+        "Healthcare IT",
+        "Patient Portal & Scheduling",
+        ["patient portal", "appointment", "ehr", "hipaa", "healthcare", "clinical"],
+    ),
+    (
+        "Web Development",
+        "Website with Booking",
+        ["website", "booking", "landing page", "web presence"],
+    ),
+    (
+        "CRM & Sales",
+        "CRM Implementation",
+        ["crm", "customer relationship", "lead tracking", "sales pipeline"],
+    ),
+    (
+        "Compliance & KYC",
+        "KYC/AML Automation",
+        ["kyc", "aml", "compliance", "onboarding", "identity verification",
+         "know your customer"],
+    ),
+    (
+        "E-commerce",
+        "E-commerce Platform",
+        ["e-commerce", "ecommerce", "online store", "shopify",
+         "payment processing", "shipping"],
+    ),
+    (
+        "SaaS / MVP",
+        "MVP Development",
+        ["mvp", "minimum viable", "saas platform", "prototype", "wireframes"],
+    ),
+    (
+        "Retail Technology",
+        "POS Unification",
+        ["pos", "point of sale", "menu", "restaurant",
+         "centralized management"],
+    ),
+    (
+        "Process Automation",
+        "General Workflow Automation",
+        ["automate", "workflow", "integration", "api", "notification"],
+    ),
 ]
 
 
@@ -182,7 +225,7 @@ def _classify_single(record: ClientRecord) -> ClassifiedNeed:
     """Classify one client's need using keyword rules."""
     text = (record.need + " " + record.research_notes).lower()
 
-    best_match: Optional[Tuple[str, str, float, List[str]]] = None
+    best_match: tuple[str, str, float, list[str]] | None = None
 
     for category, sub_category, keywords in CLASSIFICATION_RULES:
         found = [kw for kw in keywords if re.search(r"\b" + re.escape(kw) + r"\b", text)]
@@ -204,7 +247,11 @@ def _classify_single(record: ClientRecord) -> ClassifiedNeed:
     category, sub_category, score, keywords = best_match
     confidence = min(1.0, score + 0.2)  # Add a floor so a single keyword match isn't too low
     complexity = (
-        "High" if confidence > 0.7 or "enterprise" in text or "hipaa" in text or "compliance" in text
+        "High"
+        if confidence > 0.7
+        or "enterprise" in text
+        or "hipaa" in text
+        or "compliance" in text
         else "Low" if confidence < 0.4
         else "Medium"
     )
@@ -218,7 +265,7 @@ def _classify_single(record: ClientRecord) -> ClassifiedNeed:
     )
 
 
-def classify(records: List[ClientRecord]) -> List[ClassifiedNeed]:
+def classify(records: list[ClientRecord]) -> list[ClassifiedNeed]:
     """Run classification on every valid client record."""
     results = [_classify_single(r) for r in records]
     for rec, cls in zip(records, results):
@@ -467,7 +514,8 @@ def _generate_scope(record: ClientRecord, cls: ClassifiedNeed, idx: int) -> Proj
 
     # Generate tailored deliverables based on classification
     deliverables = [
-        f"Project kick-off workshop and requirements gathering ({cls.estimated_complexity} engagement)",
+        f"Project kick-off workshop and requirements gathering "
+        f"({cls.estimated_complexity} engagement)",
         f"{sub} architecture design document",
         f"Implementation of {sub} solution",
         "Integration testing and quality assurance",
@@ -507,8 +555,8 @@ def _generate_scope(record: ClientRecord, cls: ClassifiedNeed, idx: int) -> Proj
 
 
 def generate_scopes(
-    records: List[ClientRecord], classifications: List[ClassifiedNeed]
-) -> List[ProjectScope]:
+    records: list[ClientRecord], classifications: list[ClassifiedNeed]
+) -> list[ProjectScope]:
     """Generate project scope documents for each classified client."""
     scopes = [_generate_scope(r, c, i) for i, (r, c) in enumerate(zip(records, classifications))]
     print(f"  [SCOPE]   {len(scopes)} scope document(s) generated\n")
@@ -537,8 +585,8 @@ def _render_markdown(scope: ProjectScope) -> str:
         "",
         "## 1. Client Information",
         "",
-        f"| Field         | Value",
-        f"|---------------|-------",
+        "| Field         | Value",
+        "|---------------|-------",
         f"| **Client ID** | {c.id}",
         f"| **Name**      | {c.name}",
         f"| **Industry**  | {c.industry}",
@@ -548,8 +596,8 @@ def _render_markdown(scope: ProjectScope) -> str:
         "",
         "## 2. Need Classification",
         "",
-        f"| Field                | Value",
-        f"|----------------------|-------",
+        "| Field                | Value",
+        "|----------------------|-------",
         f"| **Category**         | {cl.category}",
         f"| **Sub-category**     | {cl.sub_category}",
         f"| **Confidence**       | {cl.confidence:.0%}",
@@ -584,8 +632,8 @@ def _render_markdown(scope: ProjectScope) -> str:
         "",
         "## 8. Timeline & Budget",
         "",
-        f"| Dimension | Estimate",
-        f"|-----------|--------",
+        "| Dimension | Estimate",
+        "|-----------|--------",
         f"| **Estimated Duration** | {scope.estimated_duration}",
         f"| **Estimated Budget**  | {scope.estimated_budget_range}",
         "",
@@ -605,18 +653,18 @@ def _render_markdown(scope: ProjectScope) -> str:
         "",
         "---",
         "",
-        f"*Report generated by the Client Intake & Project Scoping Pipeline*",
+        "*Report generated by the Client Intake & Project Scoping Pipeline*",
         "",
     ])
     return "\n".join(lines)
 
 
-def output(scopes: List[ProjectScope], output_dir: str = "") -> List[Path]:
+def output(scopes: list[ProjectScope], output_dir: str = "") -> list[Path]:
     """Write each scope to a markdown file. Returns list of file paths written."""
     out_dir = Path(output_dir or OUTPUT_DIR)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    written: List[Path] = []
+    written: list[Path] = []
     for scope in scopes:
         safe_name = re.sub(r"[^a-zA-Z0-9_-]", "_", scope.client.name.lower().replace(" ", "_"))
         filename = f"{scope.scope_id}_{safe_name}.md"
@@ -638,7 +686,7 @@ def output(scopes: List[ProjectScope], output_dir: str = "") -> List[Path]:
     return written
 
 
-def _render_index(scopes: List[ProjectScope]) -> str:
+def _render_index(scopes: list[ProjectScope]) -> str:
     """Render a summary index markdown file linking all scopes."""
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     lines = [
@@ -663,7 +711,7 @@ def _render_index(scopes: List[ProjectScope]) -> str:
         "",
         "---",
         "",
-        f"*Generated by the Client Intake & Project Scoping Pipeline*",
+        "*Generated by the Client Intake & Project Scoping Pipeline*",
     ])
     return "\n".join(lines) + "\n"
 
@@ -672,7 +720,7 @@ def _render_index(scopes: List[ProjectScope]) -> str:
 # Pipeline Orchestrator
 # ---------------------------------------------------------------------------
 
-def run_pipeline(sources: List[str], output_dir: str = "") -> Tuple[int, int]:
+def run_pipeline(sources: list[str], output_dir: str = "") -> tuple[int, int]:
     """
     Execute the full pipeline for one or more intake sources.
 
@@ -684,7 +732,7 @@ def run_pipeline(sources: List[str], output_dir: str = "") -> Tuple[int, int]:
 
     # --- Stage 1: Ingestion ---
     print("\n─── Stage 1: INGEST ────────────────────────────────")
-    all_records: List[ClientRecord] = []
+    all_records: list[ClientRecord] = []
     for src in sources:
         all_records.extend(ingest(src))
 
@@ -712,7 +760,7 @@ def run_pipeline(sources: List[str], output_dir: str = "") -> Tuple[int, int]:
 
     # --- Stage 5: Output ---
     print("\n─── Stage 5: OUTPUT ────────────────────────────────")
-    written = output(scopes, output_dir)
+    output(scopes, output_dir)
 
     print("=" * 70)
     print(f"  PIPELINE COMPLETE: {len(scopes)} scope(s) generated, {len(errors)} error(s)")

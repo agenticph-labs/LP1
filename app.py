@@ -7,4 +7,4 @@ Usage:
     streamlit run streamlit_ui.py
 """
 
-from streamlit_ui import *
+import streamlit_ui  # noqa: F401 — module-level code runs UI on import
